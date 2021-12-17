@@ -2,38 +2,37 @@ import React, { Component } from 'react';
 import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
 import Loader from '../Loader/Loader';
 import Button from '../Button/Button';
+import api from '../apiService';
 import PropTypes from 'prop-types';
 import s from './ImageGallery.module.css';
 import { toast } from 'react-toastify';
-const BASE_URL = 'https://pixabay.com/api';
-const API_KEY = '23964778-a3e050be7e1391d793e3046e4';
 
 export default class ImageGallery extends Component {
   state = {
-    page: 1,
     cards: [],
     status: 'idle',
-    error: null,
   };
-  fetchApi(text, page) {
-    return fetch(
-      `${BASE_URL}/?q=${text}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`,
-    ).then(response => {
-      if (response.ok) {
-        return response.json();
-      }
-      return Promise.reject(
-        new Error(`Нет результатов поиска по данному запросу`),
-      );
-    });
-  }
 
-  handleRenderPage() {
-    // const { page } = this.state;
+  handleRenderPage = () => {
+    this.setState({ cards: [] });
+    const { text, page } = this.props;
     // const { text } = this.props;
-    this.fetchApi(this.props.text, this.state.page)
+
+    api
+      .fetchApi(text, page)
       .then(cards =>
-        // console.log(cards);
+        this.setState(prevState => ({
+          cards: [...prevState.cards, ...cards.hits],
+          status: 'resolved',
+          page: 2,
+        })),
+      )
+      .catch(error => this.setState({ status: 'rejected' }));
+  };
+  handleAddPage = () => {
+    api
+      .fetchApi(this.props.text, this.state.page)
+      .then(cards =>
         this.setState(prevState => ({
           cards: [...prevState.cards, ...cards.hits],
           status: 'resolved',
@@ -41,7 +40,7 @@ export default class ImageGallery extends Component {
         })),
       )
       .catch(error => this.setState({ status: 'rejected' }));
-  }
+  };
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.text !== this.props.text) {
       this.setState({ status: 'pending' });
@@ -49,27 +48,28 @@ export default class ImageGallery extends Component {
     }
   }
   render() {
-    const { error, status, cards } = this.state;
+    const { status, cards } = this.state;
     if (status === 'idle') {
       return <div></div>;
     }
     if (status === 'pending') {
       return <Loader />;
     }
-    if (cards.length < 1) {
-      return toast.error(`Нет результатов поиска по данному запросу`);
-    }
+
     if (status === 'resolved') {
       return (
-        <div>
+        <>
           <ul className={s.gallery}>
             {cards.map(card => (
               <ImageGalleryItem card={card} key={card.id} />
             ))}
           </ul>
-          <Button onClick={this.handleRenderPage} />
-        </div>
+          <Button onClick={this.handleAddPage} />
+        </>
       );
+    }
+    if (cards.length === 0) {
+      return toast.error(`Нет результатов поиска по данному запросу`);
     }
   }
 }
