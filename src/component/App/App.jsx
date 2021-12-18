@@ -5,15 +5,13 @@ import ImageGallery from '../ImageGallery/ImageGallery';
 export default class App extends Component {
   state = {
     text: '',
-
     page: 1,
   };
+
   handleFormSubmit = text => {
     this.setState({ text: text });
   };
-  componentDidMount() {}
 
-  componentDidUpdate(prevProps, prevState) {}
   render() {
     return (
       <div>

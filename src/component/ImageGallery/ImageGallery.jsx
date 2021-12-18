@@ -3,10 +3,7 @@ import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
 import Loader from '../Loader/Loader';
 import Button from '../Button/Button';
 import api from '../apiService';
-import PropTypes from 'prop-types';
 import s from './ImageGallery.module.css';
-import { toast } from 'react-toastify';
-
 export default class ImageGallery extends Component {
   state = {
     cards: [],
@@ -14,9 +11,7 @@ export default class ImageGallery extends Component {
   };
 
   handleRenderPage = () => {
-    this.setState({ cards: [] });
     const { text, page } = this.props;
-    // const { text } = this.props;
 
     api
       .fetchApi(text, page)
@@ -29,6 +24,7 @@ export default class ImageGallery extends Component {
       )
       .catch(error => this.setState({ status: 'rejected' }));
   };
+
   handleAddPage = () => {
     api
       .fetchApi(this.props.text, this.state.page)
@@ -41,12 +37,14 @@ export default class ImageGallery extends Component {
       )
       .catch(error => this.setState({ status: 'rejected' }));
   };
+
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.text !== this.props.text) {
-      this.setState({ status: 'pending' });
+      this.setState({ status: 'pending', cards: [] });
       this.handleRenderPage();
     }
   }
+
   render() {
     const { status, cards } = this.state;
     if (status === 'idle') {
@@ -55,7 +53,9 @@ export default class ImageGallery extends Component {
     if (status === 'pending') {
       return <Loader />;
     }
-
+    if (!cards.length) {
+      return <h2>Нет результатов поиска по данному запросу</h2>;
+    }
     if (status === 'resolved') {
       return (
         <>
@@ -68,10 +68,5 @@ export default class ImageGallery extends Component {
         </>
       );
     }
-    if (cards.length === 0) {
-      return toast.error(`Нет результатов поиска по данному запросу`);
-    }
   }
 }
-
-ImageGalleryItem.propTypes = {};

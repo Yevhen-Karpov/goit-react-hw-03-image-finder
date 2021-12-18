@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import Modal from 'component/Modal/Modal';
 import s from './ImageGalleryItem.module.css';
-
 export default class ImageGalleryItem extends Component {
   state = {
     showModal: false,
