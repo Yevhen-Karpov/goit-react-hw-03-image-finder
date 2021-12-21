@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { animateScroll as scroll } from 'react-scroll';
 import s from './Button.module.css';
+
 export default class Button extends Component {
   handleClick = () => {
     this.props.onClick();
